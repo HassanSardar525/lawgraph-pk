@@ -13,7 +13,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8.3", "httpx>=0.28"]
 observability = ["langsmith>=0.4.25"]
-pdf = ["pypdf>=6.0"]
+pdf = ["pypdf>=6.0", "python-multipart>=0.0.20"]
 
 [project.scripts]
 lawgraph = "lawgraph_pk.cli:main"
