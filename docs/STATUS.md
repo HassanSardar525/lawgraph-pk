@@ -71,18 +71,23 @@ Implemented:
 - [x] page numbers in retrieval citations
 - [x] deterministic tests for page/evidence provenance
 - [x] official-source strategy documented in `docs/REAL_INGESTION.md`
+- [x] provider-agnostic structured LLM extractor
+- [x] versioned claim schema and confidence field
+- [x] evidence quote + character-offset contract
+- [x] fake-model tests without an API key
+- [x] initial official-source temporal corpus manifest (PECA 2016 + 2025 amendment)
 
 Remaining:
 
-- [ ] structured LLM claim extractor
-- [ ] extraction confidence calibration/schema versioning
+- [ ] select/connect one real LLM provider
+- [ ] calibrate extraction confidence on verified claims
 - [ ] stronger legal entity/relation normalization
-- [ ] small manually verified Pakistani legal corpus
+- [ ] build and manually verify the small real corpus
 - [ ] OCR path for scanned PDFs
 
 ## Current limitations
 
-- No real LLM extraction yet.
+- The structured LLM extractor is implemented but no provider is connected yet.
 - Hash embeddings are only a deterministic test substitute.
 - SQLite is not the target production graph/vector backend.
 - The answer generator is template-based rather than an LLM.
@@ -127,7 +132,7 @@ Remaining:
 ## Milestone 8 — Portfolio demo
 
 - [ ] interactive graph explorer
-- [ ] document/update timeline
+- [ ] update timeline
 - [ ] citation viewer
 - [ ] experiment charts
 - [ ] deployment
