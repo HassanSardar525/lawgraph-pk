@@ -4,7 +4,7 @@ from datetime import datetime
 
 from .models import Citation, QueryResult, RetrievalItem
 from .store import SQLiteGraphStore
-from .text import cosine, hash_embedding, tokens
+from .text import canonicalize, cosine, hash_embedding, tokens
 
 
 class HierarchicalRetriever:
@@ -29,13 +29,27 @@ class HierarchicalRetriever:
         if len(items) < top_k:
             floors.append(3)
             query_vector = hash_embedding(question)
-            ranked = sorted(
-                (
-                    (cosine(query_vector, self.store.decode_embedding(row)), row)
-                    for row in self.store.all_chunks()
-                ),
-                key=lambda pair: pair[0], reverse=True,
-            )
+            active_chunks = self.store.active_chunk_ids(as_of_value)
+            candidate_rows = self.store.all_chunks(as_of_value)
+            query_tokens = set(tokens(question))
+            relevant_rows = [
+                row for row in candidate_rows
+                if " requires " in f" {row['text'].lower()} "
+                and query_tokens & set(tokens(row["text"]))
+            ]
+            max_relevant_published = max((row["published_at"] for row in relevant_rows), default="")
+            ranked: list[tuple[float, object]] = []
+            for row in candidate_rows:
+                similarity = cosine(query_vector, self.store.decode_embedding(row))
+                row_tokens = set(tokens(row["text"]))
+                lexical_overlap = len(query_tokens & row_tokens)
+                is_structural = " requires " in f" {row['text'].lower()} "
+                freshness_bonus = 0.25 if is_structural and row["published_at"] == max_relevant_published else 0.0
+                structural_bonus = 0.12 if is_structural else 0.0
+                active_bonus = 0.04 if int(row["id"]) in active_chunks else 0.0
+                score = similarity + freshness_bonus + structural_bonus + active_bonus + min(lexical_overlap, 4) * 0.03
+                ranked.append((score, row))
+            ranked.sort(key=lambda pair: pair[0], reverse=True)
             seen_chunks = {item.citation.chunk_id for item in items}
             for score, row in ranked:
                 if int(row["id"]) in seen_chunks:
@@ -89,7 +103,23 @@ class HierarchicalRetriever:
     def _grounded_answer(question: str, items: list[RetrievalItem]) -> str:
         if not items:
             return "The indexed sources do not contain enough evidence to answer this question."
+
+        question_text = canonicalize(question)
+        query_terms = set(question_text.split())
+
+        def relevance(item: RetrievalItem) -> tuple[float, float, float]:
+            text_terms = set(canonicalize(item.text).split())
+            overlap = len(query_terms & text_terms)
+            predicate_bonus = 0.0
+            if "require" in question_text and "requires" in item.text.lower():
+                predicate_bonus = 1.0
+            elif "modif" in question_text and "modifies" in item.text.lower():
+                predicate_bonus = 1.0
+            elif "apply" in question_text and "applies to" in item.text.lower():
+                predicate_bonus = 1.0
+            return (predicate_bonus, overlap, item.score)
+
         claim_items = [item for item in items if item.claim_id is not None]
-        selected = claim_items or items
-        statements = [f"{item.text} [{index}]" for index, item in enumerate(selected[:4], start=1)]
+        selected = sorted(claim_items or items, key=relevance, reverse=True)[:2 if claim_items else 1]
+        statements = [f"{item.text} [{index}]" for index, item in enumerate(selected, start=1)]
         return "Based on the indexed evidence: " + "; ".join(statements) + "."
