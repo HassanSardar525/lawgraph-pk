@@ -9,7 +9,7 @@ LawGraph-PK is a research implementation that combines two ideas:
 
 The research extension adds **temporal claim versioning, provenance and conflict-aware updates** so that legal amendments do not silently erase history or produce stale answers.
 
-> **Research status:** Milestone 1 is complete. The current code is a deterministic, local prototype. Real PDFs, LLM extraction, Neo4j/PostgreSQL, verified Pakistani legal data and the full experiment suite are next.
+> **Research status:** The local comparison harness is complete. Real PDFs, LLM extraction, verified Pakistani legal data, production stores and the full research evaluation are next.
 
 ## Architecture
 
@@ -55,23 +55,36 @@ uv sync --extra dev
 uv run pytest
 uv run lawgraph demo
 uv run lawgraph evaluate
+uv run lawgraph compare
 uv run uvicorn lawgraph_pk.api:app --reload
 ```
 
-Open <http://127.0.0.1:8000>.
+`lawgraph compare` runs the deterministic benchmark comparing vector-only, rebuild Graph-RAG, incremental Graph-RAG and the proposed temporal + hierarchical system.
 
-## Current prototype
+Open <http://127.0.0.1:8000> for the small browser demo.
 
-The local milestone intentionally avoids external services:
+## Current implementation
+
+The local implementation intentionally avoids external services:
 
 - Python 3.11+
 - FastAPI + Pydantic
 - SQLite
 - deterministic hash embeddings
 - deterministic `subject | predicate | object` extraction
+- temporal supersession and historical `as_of` queries
+- three-floor hierarchical retrieval
+- vector-only and static graph baselines
+- reproducible comparison/evaluation harness
 - pytest
 
 This makes the core research logic reproducible without an API key.
+
+## Current comparison result
+
+The synthetic benchmark currently shows the proposed system with roughly **0.89 answer accuracy** versus **0.44** for both the flat vector and static graph baselines. The incremental indexer also processes about **78% fewer chunks** and **79% fewer claims** than rebuilding after every update in the benchmark stream.
+
+These are **prototype validation results, not research claims**. The benchmark is synthetic and intentionally small. See [docs/EXPERIMENT_RESULTS.md](docs/EXPERIMENT_RESULTS.md).
 
 ## Repository map
 
@@ -80,18 +93,20 @@ src/lawgraph_pk/
   models.py       # domain models
   text.py         # canonicalization/chunking/test embeddings
   extraction.py   # ClaimExtractor interface + fixture extractor
-  store.py        # SQLite persistence
+  store.py        # SQLite persistence + temporal chunk helpers
   ingestion.py    # incremental indexing + temporal updates
-  retrieval.py    # hierarchical retrieval
-  baselines.py    # vector-only baseline
-  evaluation.py   # experiment metrics
+  retrieval.py    # temporal hierarchical retrieval
+  baselines.py    # vector-only + static graph baselines
+  evaluation.py   # retrieval/answer metrics
+  experiment.py   # deterministic comparison benchmark
   service.py      # dependency wiring
   api.py          # FastAPI API
-  cli.py          # demo/evaluation CLI
+  cli.py          # demo/evaluation/comparison CLI
 
 docs/
   ARCHITECTURE.md
   EXPERIMENT_PROTOCOL.md
+  EXPERIMENT_RESULTS.md
   IMPLEMENTATION_PLAN.md
   PAPER_NOTES.md
   RESEARCH_SPEC.md
@@ -110,13 +125,13 @@ CHANGELOG.md        # implementation history
 | ID | System | Purpose |
 |---|---|---|
 | B1 | Vector-only RAG | Flat retrieval baseline |
-| B2 | Rebuild Graph-RAG | Tests graph quality without incremental optimization |
-| B3 | Incremental Graph-RAG | Tests update efficiency |
-| Ours | Temporal + Conflict + Hierarchical Graph-RAG | Proposed extension |
+| B2 | Rebuild Graph-RAG | Graph retrieval without incremental optimization |
+| B3 | Incremental Graph-RAG | Same graph retrieval with incremental maintenance |
+| Ours | Temporal + Hierarchical Graph-RAG | Incremental + temporal + hierarchical extension |
 
 ## Important limitation
 
-The included demo data is fictional. Nothing in this repository is legal advice. Real legal documents must be sourced responsibly, with provenance and licensing recorded, and evaluation ground truth must be human-verified.
+The included benchmark data is fictional. Nothing in this repository is legal advice. Real legal documents must be sourced responsibly, with provenance and licensing recorded, and evaluation ground truth must be human-verified.
 
 ## Continuing the project with another LLM
 

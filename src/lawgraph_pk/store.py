@@ -60,7 +60,7 @@ CREATE INDEX IF NOT EXISTS idx_claim_object ON claims(object_entity_id);
 class SQLiteGraphStore:
     def __init__(self, path: str | Path = ":memory:") -> None:
         self.path = str(path)
-        if self.path != ":memory:":
+        if self.path != ":memory":
             Path(self.path).parent.mkdir(parents=True, exist_ok=True)
         self.connection = sqlite3.connect(self.path, check_same_thread=False)
         self.connection.row_factory = sqlite3.Row
@@ -133,11 +133,32 @@ class SQLiteGraphStore:
         """
         return self.connection.execute(sql, params).fetchall()
 
-    def all_chunks(self) -> list[sqlite3.Row]:
+    def all_chunks(self, as_of: str | None = None) -> list[sqlite3.Row]:
+        if as_of:
+            return self.connection.execute(
+                """SELECT ch.*, d.title, d.source_uri, d.published_at FROM chunks ch
+                   JOIN documents d ON d.id=ch.document_id
+                   WHERE d.published_at <= ?
+                   ORDER BY d.published_at DESC, ch.position""",
+                (as_of,),
+            ).fetchall()
         return self.connection.execute(
-            """SELECT ch.*, d.title, d.source_uri FROM chunks ch
+            """SELECT ch.*, d.title, d.source_uri, d.published_at FROM chunks ch
                JOIN documents d ON d.id=ch.document_id"""
         ).fetchall()
+
+    def active_chunk_ids(self, as_of: str | None = None) -> set[int]:
+        if as_of:
+            rows = self.connection.execute(
+                """SELECT DISTINCT chunk_id FROM claims
+                   WHERE valid_from <= ? AND (valid_to IS NULL OR valid_to > ?)""",
+                (as_of, as_of),
+            ).fetchall()
+        else:
+            rows = self.connection.execute(
+                "SELECT DISTINCT chunk_id FROM claims WHERE is_current=1"
+            ).fetchall()
+        return {int(row["chunk_id"]) for row in rows}
 
     def neighboring_entity_ids(self, entity_ids: list[int]) -> list[int]:
         if not entity_ids:

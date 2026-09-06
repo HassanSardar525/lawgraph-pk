@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 
 from .baselines import VectorOnlyRetriever
 from .evaluation import EvaluationCase, evaluate
+from .experiment import run_comparison
 from .service import LawGraphService
 
 
@@ -69,14 +70,20 @@ def run_evaluation() -> None:
     print(json.dumps(report, indent=2))
 
 
+def run_compare() -> None:
+    print(json.dumps(run_comparison(), indent=2))
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="lawgraph")
-    parser.add_argument("command", choices=["demo", "evaluate"])
+    parser.add_argument("command", choices=["demo", "evaluate", "compare"])
     args = parser.parse_args()
     if args.command == "demo":
         run_demo()
     elif args.command == "evaluate":
         run_evaluation()
+    elif args.command == "compare":
+        run_compare()
 
 
 if __name__ == "__main__":

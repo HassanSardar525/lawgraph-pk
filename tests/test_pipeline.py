@@ -78,3 +78,4 @@ def test_evaluation_reports_retrieval_metrics():
     assert report["hit_rate_at_k"] == 1.0
     assert report["mrr"] == 1.0
     assert report["citation_rate"] == 1.0
+    assert report["answer_accuracy"] == 1.0

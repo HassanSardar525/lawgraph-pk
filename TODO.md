@@ -1,36 +1,34 @@
 # TODO
 
-## Immediate
+## Next — Real-data validation
 
-- [ ] Add page-aware PDF ingestion.
-- [ ] Implement LLM structured extraction behind `ClaimExtractor`.
-- [ ] Add extraction schema/version metadata.
-- [ ] Add rebuild Graph-RAG baseline.
-- [ ] Create versioned evaluation JSONL.
+- [ ] Add page-aware PDF ingestion with source/page provenance.
+- [ ] Add an optional structured LLM extractor behind the existing `ClaimExtractor` interface.
+- [ ] Validate extracted evidence spans against source chunks.
+- [ ] Build a small manually verified legal corpus from official sources.
+- [ ] Convert real questions into the existing `EvaluationCase` format.
+- [ ] Run vector vs rebuild graph vs incremental graph vs temporal/hierarchical comparisons.
 
-## Research
+## Research extension
 
-- [ ] Measure incremental vs rebuild update cost.
-- [ ] Measure stale-answer rate after amendments.
-- [ ] Test graph vs vector retrieval on multi-hop questions.
-- [ ] Test hierarchical fallback under entity-extraction failures.
-- [ ] Run temporal/conflict ablations.
-- [ ] Add human-verified evidence labels.
+- [ ] Generalize temporal intervals beyond replaceable predicates.
+- [ ] Add explicit contradiction/conflict edges.
+- [ ] Add source-priority/provenance scoring.
+- [ ] Add ablations for temporal logic, hierarchical fallback and entity canonicalization.
+- [ ] Add update-impact accounting for LLM extraction calls/tokens.
 
-## Engineering
+## Engineering later
 
 - [ ] Neo4j adapter.
-- [ ] PostgreSQL/pgvector adapter.
+- [ ] PostgreSQL + pgvector adapter.
 - [ ] Docker Compose.
-- [ ] Better configuration and logging.
-- [ ] Graph visualization.
-- [ ] Evaluation dashboard.
+- [ ] Optional real embedding provider.
+- [ ] Optional LLM answer generator.
 
-## Presentation
+## Portfolio last
 
-- [ ] Architecture figure.
-- [ ] Results table.
-- [ ] Update-cost chart.
-- [ ] Freshness/stale-answer chart.
-- [ ] Error analysis examples.
-- [ ] Research report and reproducibility appendix.
+- [ ] Graph explorer.
+- [ ] Update timeline.
+- [ ] Citation viewer.
+- [ ] Experiment charts.
+- [ ] Research report.
