@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LawGraph-PK</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, system-ui, sans-serif; background:#0b0d10; color:#eef1f5; }
+    body { max-width:1100px; margin:auto; padding:48px 20px; }
+    header { margin-bottom:36px; } h1 { font-size:clamp(2rem,5vw,4rem); margin:0; letter-spacing:-.05em; }
+    header p { color:#9ca6b5; max-width:700px; line-height:1.6; }
+    main { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+    section { background:#12161c; border:1px solid #262d38; border-radius:16px; padding:20px; }
+    label { display:block; margin:12px 0 6px; color:#b8c0cc; }
+    input, textarea { box-sizing:border-box; width:100%; background:#0b0d10; color:#eef1f5; border:1px solid #303846; border-radius:9px; padding:11px; }
+    textarea { min-height:180px; resize:vertical; }
+    button { margin-top:12px; border:0; border-radius:9px; background:#c7ff4a; color:#10140a; font-weight:700; padding:11px 16px; cursor:pointer; }
+    pre { white-space:pre-wrap; word-break:break-word; color:#cbd3df; min-height:120px; }
+    .wide { grid-column:1/-1; } .trace { color:#c7ff4a; }
+    @media(max-width:720px){ main { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header><h1>LawGraph-PK</h1><p>Incremental, temporal and conflict-aware knowledge-graph RAG. Add an updated claim, then observe which retrieval floors are used.</p></header>
+  <main>
+    <section>
+      <h2>Ingest an update</h2>
+      <label for="title">Document title</label><input id="title" value="Illustrative Amendment 2025">
+      <label for="date">Published date</label><input id="date" type="date" value="2025-01-01">
+      <label for="text">Claims: subject | predicate | object</label>
+      <textarea id="text">Amendment 2025 | modifies | Section 10
+Section 10 | requires | quarterly audit
+Quarterly audit | applies_to | registered platforms</textarea>
+      <button id="ingest">Update graph</button><pre id="ingestOut">Ready.</pre>
+    </section>
+    <section>
+      <h2>Ask the graph</h2>
+      <label for="question">Question</label><input id="question" value="What does Section 10 require?">
+      <button id="ask">Retrieve answer</button><p class="trace" id="trace"></p><pre id="answer">Add at least one document first.</pre>
+    </section>
+    <section class="wide"><h2>Knowledge-base status</h2><pre id="status">Loading…</pre></section>
+  </main>
+  <script>
+    const $ = id => document.getElementById(id);
+    async function refresh(){ const r=await fetch('/health'); $('status').textContent=JSON.stringify(await r.json(),null,2); }
+    $('ingest').onclick=async()=>{ const body={title:$('title').value,text:$('text').value,published_at:new Date($('date').value).toISOString(),source_uri:'demo://browser'}; const r=await fetch('/documents',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}); $('ingestOut').textContent=JSON.stringify(await r.json(),null,2); refresh(); };
+    $('ask').onclick=async()=>{ const r=await fetch('/query',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({question:$('question').value,top_k:5})}); const data=await r.json(); $('trace').textContent='Floors tried: '+data.floors_tried.join(' → '); $('answer').textContent=data.answer+'\n\n'+data.items.map((x,i)=>`[${i+1}] ${x.citation.title}: ${x.citation.evidence}`).join('\n'); };
+    refresh();
+  </script>
+</body>
+</html>
