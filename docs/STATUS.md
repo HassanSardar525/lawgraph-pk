@@ -41,6 +41,23 @@ Implemented:
 
 Current synthetic run shows the proposed temporal + hierarchical system outperforming the baselines on the benchmark's answer-accuracy metric while incremental indexing substantially reduces repeated processing work. See `docs/EXPERIMENT_RESULTS.md`.
 
+## Milestone 2.5 — LangSmith observability
+
+**Status: implemented**
+
+Implemented:
+
+- [x] optional LangSmith Python SDK integration
+- [x] ingestion traces with update/supersession statistics
+- [x] end-to-end query traces
+- [x] Floor 1/2/3 retrieval spans
+- [x] vector-only and static Graph-RAG baseline traces
+- [x] citation metadata in retrieval spans
+- [x] local no-key fallback so the benchmark remains deterministic
+- [x] setup and inspection guide in `docs/LANGSMITH.md`
+
+LangSmith is an inspection/evidence layer only. It does not affect retrieval or evaluation scores.
+
 ## Current limitations
 
 - No PDF parser.
@@ -50,6 +67,7 @@ Current synthetic run shows the proposed temporal + hierarchical system outperfo
 - The answer generator is template-based rather than an LLM.
 - Conflict handling currently focuses on supersession for selected predicates; generalized contradiction detection is not implemented.
 - The evaluation set is synthetic and intentionally small.
+- LangSmith tracing is optional and requires a user-provided API key to send remote traces.
 
 ## Milestone 3 — Real ingestion
 
