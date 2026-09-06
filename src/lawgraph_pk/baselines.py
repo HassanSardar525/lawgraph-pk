@@ -33,3 +33,63 @@ class VectorOnlyRetriever:
         ]
         answer = "Retrieved source text: " + " ".join(item.text for item in items) if items else "No evidence found."
         return QueryResult(question=question, answer=answer, as_of=as_of, items=items, floors_tried=[3])
+
+
+class StaticGraphRetriever:
+    """Graph-RAG baseline with no temporal interpretation and no vector fallback.
+
+    It is intentionally simple: retrieve current graph claims for exact entities,
+    then one-hop neighbors. This is the retrieval component used for both the
+    rebuild and incremental graph baselines; the difference between those
+    systems is measured during indexing rather than query execution.
+    """
+
+    def __init__(self, store: SQLiteGraphStore) -> None:
+        self.store = store
+
+    def query(self, question: str, *, as_of: datetime | None = None, top_k: int = 5) -> QueryResult:
+        exact = self.store.find_entities_in_question(question)
+        exact_ids = [int(row["id"]) for row in exact]
+        items = self._claim_items(self.store.claims_for_entities(exact_ids), floor=1, score=1.0)
+
+        if len(items) < top_k and exact_ids:
+            neighbor_ids = [value for value in self.store.neighboring_entity_ids(exact_ids) if value not in exact_ids]
+            items.extend(self._claim_items(self.store.claims_for_entities(neighbor_ids), floor=2, score=0.7))
+
+        items = self._deduplicate(items)[:top_k]
+        answer = self._grounded_answer(items)
+        return QueryResult(question=question, answer=answer, as_of=as_of, items=items, floors_tried=[1, 2] if exact_ids else [1])
+
+    @staticmethod
+    def _claim_items(rows: list, floor: int, score: float) -> list[RetrievalItem]:
+        return [
+            RetrievalItem(
+                floor=floor,
+                score=score,
+                text=f"{row['subject_name']} —{row['predicate'].replace('_', ' ')}→ {row['object_name']}",
+                claim_id=int(row["id"]),
+                citation=Citation(
+                    document_id=int(row["document_id"]), title=row["title"],
+                    source_uri=row["source_uri"], chunk_id=int(row["chunk_id"]), evidence=row["evidence"],
+                ),
+            )
+            for row in rows
+        ]
+
+    @staticmethod
+    def _deduplicate(items: list[RetrievalItem]) -> list[RetrievalItem]:
+        result: list[RetrievalItem] = []
+        seen: set[tuple[int, str]] = set()
+        for item in items:
+            key = (item.citation.chunk_id, item.text)
+            if key not in seen:
+                seen.add(key)
+                result.append(item)
+        return result
+
+    @staticmethod
+    def _grounded_answer(items: list[RetrievalItem]) -> str:
+        if not items:
+            return "The graph does not contain enough evidence to answer this question."
+        statements = [f"{item.text} [{index}]" for index, item in enumerate(items[:4], start=1)]
+        return "Based on the graph evidence: " + "; ".join(statements) + "."
