@@ -28,12 +28,16 @@ class DelimitedClaimExtractor:
 
     def extract(self, text: str) -> list[ExtractedClaim]:
         claims: list[ExtractedClaim] = []
-        for raw_line in text.splitlines():
+        offset = 0
+        for raw_line in text.splitlines(keepends=True):
             line = raw_line.strip().lstrip("- ")
             parts = [part.strip() for part in line.split("|")]
             if len(parts) != 3 or not all(parts):
+                offset += len(raw_line)
                 continue
             subject, predicate, obj = parts
+            start = text.find(line, offset)
+            end = start + len(line)
             claims.append(
                 ExtractedClaim(
                     subject=subject,
@@ -42,6 +46,9 @@ class DelimitedClaimExtractor:
                     evidence=line,
                     subject_type=_entity_type(subject),
                     object_type=_entity_type(obj),
+                    evidence_start=start,
+                    evidence_end=end,
                 )
             )
+            offset += len(raw_line)
         return claims

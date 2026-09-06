@@ -35,6 +35,7 @@ class VectorOnlyRetriever:
                     citation=Citation(
                         document_id=int(row["document_id"]), title=row["title"],
                         source_uri=row["source_uri"], chunk_id=int(row["id"]), evidence=row["text"],
+                        page_number=row["page_number"],
                     ),
                 )
                 for score, row in ranked
@@ -95,6 +96,7 @@ class StaticGraphRetriever:
                 citation=Citation(
                     document_id=int(row["document_id"]), title=row["title"],
                     source_uri=row["source_uri"], chunk_id=int(row["chunk_id"]), evidence=row["evidence"],
+                    page_number=row["page_number"], evidence_start=row["evidence_start"], evidence_end=row["evidence_end"],
                 ),
             )
             for row in rows

@@ -58,29 +58,43 @@ Implemented:
 
 LangSmith is an inspection/evidence layer only. It does not affect retrieval or evaluation scores.
 
+## Milestone 3 — Real ingestion
+
+**Status: in progress**
+
+Implemented:
+
+- [x] page-aware PDF text extraction with optional `pypdf`
+- [x] page-aware chunk provenance
+- [x] PDF upload API endpoint
+- [x] evidence-span storage and validation
+- [x] page numbers in retrieval citations
+- [x] deterministic tests for page/evidence provenance
+- [x] official-source strategy documented in `docs/REAL_INGESTION.md`
+- [x] provider-agnostic structured LLM extractor
+- [x] versioned claim schema and confidence field
+- [x] evidence quote + character-offset contract
+- [x] fake-model tests without an API key
+- [x] initial official-source temporal corpus manifest (PECA 2016 + 2025 amendment)
+
+Remaining:
+
+- [ ] select/connect one real LLM provider
+- [ ] calibrate extraction confidence on verified claims
+- [ ] stronger legal entity/relation normalization
+- [ ] build and manually verify the small real corpus
+- [ ] OCR path for scanned PDFs
+
 ## Current limitations
 
-- No PDF parser.
-- No real LLM extraction.
+- The structured LLM extractor is implemented but no provider is connected yet.
 - Hash embeddings are only a deterministic test substitute.
 - SQLite is not the target production graph/vector backend.
 - The answer generator is template-based rather than an LLM.
 - Conflict handling currently focuses on supersession for selected predicates; generalized contradiction detection is not implemented.
 - The evaluation set is synthetic and intentionally small.
 - LangSmith tracing is optional and requires a user-provided API key to send remote traces.
-
-## Milestone 3 — Real ingestion
-
-**Status: next**
-
-Tasks:
-
-- [ ] choose and document legal data sources/licensing
-- [ ] PDF/text extraction with page-aware provenance
-- [ ] structured LLM claim extractor
-- [ ] extraction confidence and schema validation
-- [ ] entity/relation normalization tests
-- [ ] evidence-span validation
+- OCR for scanned/image-only PDFs is not implemented.
 
 ## Milestone 4 — Research baselines
 
@@ -118,7 +132,7 @@ Tasks:
 ## Milestone 8 — Portfolio demo
 
 - [ ] interactive graph explorer
-- [ ] document/update timeline
+- [ ] update timeline
 - [ ] citation viewer
 - [ ] experiment charts
 - [ ] deployment

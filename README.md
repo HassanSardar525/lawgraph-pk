@@ -9,7 +9,7 @@ LawGraph-PK is a research implementation that combines two ideas:
 
 The research extension adds **temporal claim versioning, provenance and conflict-aware updates** so that legal amendments do not silently erase history or produce stale answers.
 
-> **Research status:** The local comparison harness is complete. Real PDFs, LLM extraction, verified Pakistani legal data, production stores and the full research evaluation are next.
+> **Research status:** The comparison harness and observability layer are complete. Page-aware PDF ingestion is now implemented. Structured LLM extraction, verified Pakistani legal data, production stores and the full research evaluation are next.
 
 ## Architecture
 
@@ -61,17 +61,19 @@ uv run lawgraph compare
 uv run uvicorn lawgraph_pk.api:app --reload
 ```
 
-With LangSmith observability:
+With PDF ingestion and LangSmith:
 
 ```bash
-uv sync --extra dev --extra observability
+uv sync --extra dev --extra pdf --extra observability
 ```
 
 Then configure `LANGSMITH_TRACING=true`, `LANGSMITH_API_KEY`, and `LANGSMITH_PROJECT=lawgraph-pk`. See [docs/LANGSMITH.md](docs/LANGSMITH.md).
 
+For PDF ingestion and provenance details, see [docs/REAL_INGESTION.md](docs/REAL_INGESTION.md).
+
 `lawgraph compare` runs the deterministic benchmark comparing vector-only, rebuild Graph-RAG, incremental Graph-RAG and the proposed temporal + hierarchical system.
 
-Open <http://127.0.0.1:8000> for the small browser demo.
+Open <http://127.0.0.1:8000> for the small browser demo. PDFs can be uploaded through `POST /documents/pdf` when the `pdf` extra is installed.
 
 ## Current implementation
 
@@ -86,6 +88,8 @@ The local implementation intentionally avoids external services for its core log
 - three-floor hierarchical retrieval
 - vector-only and static graph baselines
 - reproducible comparison/evaluation harness
+- page-aware PDF extraction and page-level citation provenance
+- evidence-span validation
 - optional LangSmith observability with query/ingestion/retrieval traces
 - pytest
 
@@ -101,25 +105,27 @@ These are **prototype validation results, not research claims**. The benchmark i
 
 ```text
 src/lawgraph_pk/
-  models.py       # domain models
-  text.py         # canonicalization/chunking/test embeddings
-  extraction.py   # ClaimExtractor interface + fixture extractor
-  store.py        # SQLite persistence + temporal chunk helpers
-  ingestion.py    # incremental indexing + temporal updates
-  retrieval.py    # temporal hierarchical retrieval
-  baselines.py    # vector-only + static graph baselines
-  evaluation.py   # retrieval/answer metrics
-  experiment.py   # deterministic comparison benchmark
-  observability.py# optional LangSmith tracing
-  service.py      # dependency wiring
-  api.py          # FastAPI API
-  cli.py          # demo/evaluation/comparison CLI
+  models.py        # domain + provenance models
+  text.py          # canonicalization/chunking/test embeddings
+  extraction.py    # ClaimExtractor interface + fixture extractor
+  pdf_ingestion.py # page-aware PDF text extraction
+  store.py         # SQLite persistence + provenance metadata
+  ingestion.py     # incremental indexing + temporal updates
+  retrieval.py     # temporal hierarchical retrieval
+  baselines.py     # vector-only + static graph baselines
+  evaluation.py    # retrieval/answer metrics
+  experiment.py    # deterministic comparison benchmark
+  observability.py # optional LangSmith tracing
+  service.py       # dependency wiring
+  api.py           # FastAPI API + PDF upload
+  cli.py           # demo/evaluation/comparison CLI
 
 docs/
   ARCHITECTURE.md
   EXPERIMENT_PROTOCOL.md
   EXPERIMENT_RESULTS.md
   LANGSMITH.md
+  REAL_INGESTION.md
   IMPLEMENTATION_PLAN.md
   PAPER_NOTES.md
   RESEARCH_SPEC.md

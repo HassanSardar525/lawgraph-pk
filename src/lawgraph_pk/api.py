@@ -4,11 +4,12 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from .models import IngestResult, QueryResult
+from .pdf_ingestion import extract_pdf_pages
 from .service import LawGraphService
 
 
@@ -43,6 +44,22 @@ def health() -> dict:
 @app.post("/documents", response_model=IngestResult)
 def add_document(request: DocumentRequest) -> IngestResult:
     return service.indexer.ingest(**request.model_dump())
+
+
+@app.post("/documents/pdf", response_model=IngestResult)
+def add_pdf_document(
+    file: UploadFile = File(...),
+    title: str = Form(...),
+    source_uri: str | None = Form(None),
+    published_at: datetime | None = Form(None),
+) -> IngestResult:
+    pages = extract_pdf_pages(file.file)
+    return service.indexer.ingest_pages(
+        title=title,
+        pages=pages,
+        source_uri=source_uri or f"uploaded://{file.filename or 'document.pdf'}",
+        published_at=published_at,
+    )
 
 
 @app.post("/query", response_model=QueryResult)
