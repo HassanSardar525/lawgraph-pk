@@ -6,6 +6,7 @@ from time import perf_counter
 
 from .baselines import StaticGraphRetriever, VectorOnlyRetriever
 from .evaluation import EvaluationCase, evaluate
+from .observability import finish_trace, trace_run
 from .service import LawGraphService
 
 
@@ -209,22 +210,43 @@ def measure_update_work(documents: tuple[BenchmarkDocument, ...]) -> dict:
 
 def run_comparison() -> dict:
     suite = build_benchmark_suite()
-    service = LawGraphService()
-    _ingest(service, suite.documents)
+    with trace_run(
+        "LawGraph Research Comparison",
+        run_type="chain",
+        inputs={"documents": len(suite.documents), "questions": len(suite.cases)},
+        tags=["lawgraph", "research", "comparison"],
+        metadata={"benchmark": "synthetic-v1", "purpose": "compare_retrieval_systems"},
+    ) as run:
+        service = LawGraphService()
+        _ingest(service, suite.documents)
 
-    graph_report = evaluate(StaticGraphRetriever(service.store), list(suite.cases))
-    reports = {
-        "vector_only": evaluate(VectorOnlyRetriever(service.store), list(suite.cases)),
-        "rebuild_graph": graph_report,
-        "incremental_graph": graph_report,
-        "temporal_hierarchical": evaluate(service.retriever, list(suite.cases)),
-    }
-    return {
-        "benchmark": {
-            "documents": len(suite.documents),
-            "questions": len(suite.cases),
-            "note": "Synthetic legal-like data; not legal advice and not real law.",
-        },
-        "retrieval": reports,
-        "update_efficiency": measure_update_work(suite.documents),
-    }
+        graph_report = evaluate(StaticGraphRetriever(service.store), list(suite.cases))
+        reports = {
+            "vector_only": evaluate(VectorOnlyRetriever(service.store), list(suite.cases)),
+            "rebuild_graph": graph_report,
+            "incremental_graph": graph_report,
+            "temporal_hierarchical": evaluate(service.retriever, list(suite.cases)),
+        }
+        result = {
+            "benchmark": {
+                "documents": len(suite.documents),
+                "questions": len(suite.cases),
+                "note": "Synthetic legal-like data; not legal advice and not real law.",
+            },
+            "retrieval": reports,
+            "update_efficiency": measure_update_work(suite.documents),
+        }
+        finish_trace(run, {
+            "benchmark": result["benchmark"],
+            "systems": {
+                name: {
+                    "hit_rate_at_k": report["hit_rate_at_k"],
+                    "mrr": report["mrr"],
+                    "answer_accuracy": report["answer_accuracy"],
+                    "stale_answer_rate": report["stale_answer_rate"],
+                }
+                for name, report in reports.items()
+            },
+            "update_efficiency": result["update_efficiency"],
+        })
+        return result
