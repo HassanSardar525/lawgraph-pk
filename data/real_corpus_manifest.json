@@ -1,0 +1,20 @@
+[
+  {
+    "id": "peca-2016-original",
+    "title": "Prevention of Electronic Crimes Act, 2016",
+    "document_type": "act",
+    "published_at": "2016-08-18",
+    "source_url": "https://na.gov.pk/uploads/documents/1472635250_246.pdf",
+    "authority": "Parliament of Pakistan",
+    "role": "base_version"
+  },
+  {
+    "id": "peca-2025-amendment",
+    "title": "Prevention of Electronic Crimes (Amendment) Act, 2025",
+    "document_type": "amendment_act",
+    "published_at": "2025-01-29",
+    "source_url": "https://na.gov.pk/uploads/documents/679b243193585_457.pdf",
+    "authority": "Parliament of Pakistan",
+    "role": "update_for_peca_2016"
+  }
+]
