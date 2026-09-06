@@ -50,6 +50,8 @@ The project is anchored in the ideas of **LightRAG: Simple and Fast Retrieval-Au
 
 ## Quick start with `uv`
 
+Core-only:
+
 ```bash
 uv sync --extra dev
 uv run pytest
@@ -59,13 +61,21 @@ uv run lawgraph compare
 uv run uvicorn lawgraph_pk.api:app --reload
 ```
 
+With LangSmith observability:
+
+```bash
+uv sync --extra dev --extra observability
+```
+
+Then configure `LANGSMITH_TRACING=true`, `LANGSMITH_API_KEY`, and `LANGSMITH_PROJECT=lawgraph-pk`. See [docs/LANGSMITH.md](docs/LANGSMITH.md).
+
 `lawgraph compare` runs the deterministic benchmark comparing vector-only, rebuild Graph-RAG, incremental Graph-RAG and the proposed temporal + hierarchical system.
 
 Open <http://127.0.0.1:8000> for the small browser demo.
 
 ## Current implementation
 
-The local implementation intentionally avoids external services:
+The local implementation intentionally avoids external services for its core logic:
 
 - Python 3.11+
 - FastAPI + Pydantic
@@ -76,9 +86,10 @@ The local implementation intentionally avoids external services:
 - three-floor hierarchical retrieval
 - vector-only and static graph baselines
 - reproducible comparison/evaluation harness
+- optional LangSmith observability with query/ingestion/retrieval traces
 - pytest
 
-This makes the core research logic reproducible without an API key.
+This makes the core research logic reproducible without an API key while allowing inspection when LangSmith is enabled.
 
 ## Current comparison result
 
@@ -99,6 +110,7 @@ src/lawgraph_pk/
   baselines.py    # vector-only + static graph baselines
   evaluation.py   # retrieval/answer metrics
   experiment.py   # deterministic comparison benchmark
+  observability.py# optional LangSmith tracing
   service.py      # dependency wiring
   api.py          # FastAPI API
   cli.py          # demo/evaluation/comparison CLI
@@ -107,6 +119,7 @@ docs/
   ARCHITECTURE.md
   EXPERIMENT_PROTOCOL.md
   EXPERIMENT_RESULTS.md
+  LANGSMITH.md
   IMPLEMENTATION_PLAN.md
   PAPER_NOTES.md
   RESEARCH_SPEC.md
