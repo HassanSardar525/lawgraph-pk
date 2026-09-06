@@ -24,6 +24,23 @@ Implemented:
 - [x] browser demo
 - [x] automated tests
 
+## Milestone 2 — Research comparison harness
+
+**Status: complete**
+
+Implemented:
+
+- [x] static/rebuild Graph-RAG baseline
+- [x] incremental Graph-RAG indexing-cost comparison
+- [x] deterministic benchmark corpus with update/history/relational/fallback cases
+- [x] Hit@5, MRR and nDCG@5
+- [x] answer accuracy and stale-answer rate
+- [x] per-category metrics
+- [x] reproducible `lawgraph compare` command
+- [x] update work accounting (chunks and claims processed)
+
+Current synthetic run shows the proposed temporal + hierarchical system outperforming the baselines on the benchmark's answer-accuracy metric while incremental indexing substantially reduces repeated processing work. See `docs/EXPERIMENT_RESULTS.md`.
+
 ## Current limitations
 
 - No PDF parser.
@@ -32,9 +49,9 @@ Implemented:
 - SQLite is not the target production graph/vector backend.
 - The answer generator is template-based rather than an LLM.
 - Conflict handling currently focuses on supersession for selected predicates; generalized contradiction detection is not implemented.
-- The evaluation set is synthetic.
+- The evaluation set is synthetic and intentionally small.
 
-## Milestone 2 — Real ingestion
+## Milestone 3 — Real ingestion
 
 **Status: next**
 
@@ -47,44 +64,44 @@ Tasks:
 - [ ] entity/relation normalization tests
 - [ ] evidence-span validation
 
-## Milestone 3 — Research baselines
+## Milestone 4 — Research baselines
 
 - [x] vector-only baseline
-- [ ] rebuild/static Graph-RAG baseline
-- [ ] common retrieval interface
-- [ ] common answer-generation protocol
-- [ ] reproducible dataset loader
+- [x] rebuild/static Graph-RAG baseline
+- [x] common retrieval interface
+- [x] common answer-generation protocol
+- [x] reproducible dataset loader
 
-## Milestone 4 — Proposed system
+## Milestone 5 — Proposed system
 
 - [ ] generalized temporal claim model
 - [ ] explicit conflict/contradiction edges
-- [ ] hierarchical scoring and thresholds
-- [ ] hybrid graph/vector retrieval
-- [ ] update-impact accounting
+- [x] hierarchical fallback scoring
+- [x] graph/vector fallback
+- [x] update-impact accounting
 
-## Milestone 5 — Production stores
+## Milestone 6 — Production stores
 
 - [ ] Neo4j adapter
 - [ ] PostgreSQL + pgvector adapter
 - [ ] Docker Compose
 - [ ] configuration management
 
-## Milestone 6 — Research evaluation
+## Milestone 7 — Research evaluation
 
 - [ ] 150-question verified dataset
-- [ ] batch update experiment
-- [ ] freshness experiment
-- [ ] retrieval experiment
+- [ ] chronological batch update experiment on real data
+- [ ] freshness experiment on real amendments
+- [ ] retrieval experiment on real legal questions
 - [ ] ablations
 - [ ] error analysis
 - [ ] charts and report
 
-## Milestone 7 — Portfolio demo
+## Milestone 8 — Portfolio demo
 
 - [ ] interactive graph explorer
 - [ ] document/update timeline
 - [ ] citation viewer
-- [ ] experiment dashboard
+- [ ] experiment charts
 - [ ] deployment
 - [ ] research write-up
