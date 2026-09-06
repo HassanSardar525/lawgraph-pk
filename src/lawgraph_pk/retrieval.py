@@ -84,23 +84,25 @@ class HierarchicalRetriever:
                         ranked.append((score, row))
                     ranked.sort(key=lambda pair: pair[0], reverse=True)
                     seen_chunks = {item.citation.chunk_id for item in items}
+                    floor_items: list[RetrievalItem] = []
                     for score, row in ranked:
                         if int(row["id"]) in seen_chunks:
                             continue
-                        items.append(
-                            RetrievalItem(
-                                floor=3,
-                                score=round(float(score), 4),
-                                text=row["text"],
-                                citation=Citation(
-                                    document_id=int(row["document_id"]), title=row["title"],
-                                    source_uri=row["source_uri"], chunk_id=int(row["id"]), evidence=row["text"],
-                                ),
-                            )
+                        item = RetrievalItem(
+                            floor=3,
+                            score=round(float(score), 4),
+                            text=row["text"],
+                            citation=Citation(
+                                document_id=int(row["document_id"]), title=row["title"],
+                                source_uri=row["source_uri"], chunk_id=int(row["id"]), evidence=row["text"],
+                                page_number=row["page_number"],
+                            ),
                         )
+                        items.append(item)
+                        floor_items.append(item)
                         if len(items) >= top_k:
                             break
-                    finish_trace(floor_run, self._trace_documents(items))
+                    finish_trace(floor_run, self._trace_documents(floor_items))
 
             items = self._deduplicate(items)[:top_k]
             answer = self._grounded_answer(question, items)
@@ -128,6 +130,7 @@ class HierarchicalRetriever:
                     "document_id": item.citation.document_id,
                     "chunk_id": item.citation.chunk_id,
                     "claim_id": item.claim_id,
+                    "page_number": item.citation.page_number,
                     "source_uri": item.citation.source_uri,
                     "title": item.citation.title,
                 },
@@ -146,6 +149,7 @@ class HierarchicalRetriever:
                 citation=Citation(
                     document_id=int(row["document_id"]), title=row["title"],
                     source_uri=row["source_uri"], chunk_id=int(row["chunk_id"]), evidence=row["evidence"],
+                    page_number=row["page_number"], evidence_start=row["evidence_start"], evidence_end=row["evidence_end"],
                 ),
             )
             for row in rows
