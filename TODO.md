@@ -8,14 +8,24 @@
 - [x] Trace vector and static graph baselines.
 - [x] Trace benchmark comparison summaries.
 
+## Completed — Page-aware real ingestion foundation
+
+- [x] Page-aware PDF text extraction with `pypdf`.
+- [x] Page-level chunk provenance.
+- [x] PDF upload endpoint.
+- [x] Evidence-span storage and validation.
+- [x] Page numbers in retrieval citations.
+- [x] Deterministic tests for provenance.
+
 ## Next — Real-data validation
 
-- [ ] Add page-aware PDF ingestion with source/page provenance.
 - [ ] Add an optional structured LLM extractor behind the existing `ClaimExtractor` interface.
-- [ ] Validate extracted evidence spans against source chunks.
+- [ ] Add extraction confidence calibration/schema versioning.
+- [ ] Strengthen legal entity/relation normalization.
 - [ ] Build a small manually verified legal corpus from official sources.
 - [ ] Convert real questions into the existing `EvaluationCase` format.
-- [ ] Run vector vs rebuild graph vs incremental graph vs temporal/hierarchical comparisons.
+- [ ] Run vector vs rebuild graph vs incremental graph vs temporal/hierarchical comparisons on real data.
+- [ ] Add OCR support for scanned/image-only PDFs.
 
 ## Research extension
 
