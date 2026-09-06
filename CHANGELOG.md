@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0 — Research comparison and observability
+
+- Added static/rebuild Graph-RAG baseline.
+- Added deterministic comparison benchmark for vector, graph and temporal/hierarchical systems.
+- Added Hit@5, MRR, nDCG, answer-accuracy and stale-answer measurements.
+- Added incremental-vs-rebuild update-work measurement.
+- Added optional LangSmith tracing for ingestion, retrieval floors, baseline queries and benchmark comparisons.
+- Added LangSmith setup/inspection documentation and `.env.example`.
+- Kept LangSmith optional so deterministic tests and the core benchmark remain API-key free.
+
 ## 0.1.0 — Initial research prototype
 
 - Added SQLite-backed incremental knowledge-graph storage.
