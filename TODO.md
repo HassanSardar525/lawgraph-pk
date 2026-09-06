@@ -1,5 +1,13 @@
 # TODO
 
+## Completed — Observability
+
+- [x] Optional LangSmith integration.
+- [x] Trace ingestion/update effects.
+- [x] Trace query and retrieval floors.
+- [x] Trace vector and static graph baselines.
+- [x] Trace benchmark comparison summaries.
+
 ## Next — Real-data validation
 
 - [ ] Add page-aware PDF ingestion with source/page provenance.
