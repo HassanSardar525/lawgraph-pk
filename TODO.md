@@ -17,12 +17,20 @@
 - [x] Page numbers in retrieval citations.
 - [x] Deterministic tests for provenance.
 
+## Completed — Structured extraction foundation
+
+- [x] Provider-agnostic structured LLM claim extractor.
+- [x] Versioned claim schema.
+- [x] Confidence field.
+- [x] Evidence quote + character-offset contract.
+- [x] Fake-model tests without an API key.
+
 ## Next — Real-data validation
 
-- [ ] Add an optional structured LLM extractor behind the existing `ClaimExtractor` interface.
-- [ ] Add extraction confidence calibration/schema versioning.
+- [ ] Connect one real LLM provider and run extraction on the initial corpus.
+- [ ] Calibrate extraction confidence on manually verified claims.
 - [ ] Strengthen legal entity/relation normalization.
-- [ ] Build a small manually verified legal corpus from official sources.
+- [ ] Build a small manually verified Pakistani legal corpus from official sources.
 - [ ] Convert real questions into the existing `EvaluationCase` format.
 - [ ] Run vector vs rebuild graph vs incremental graph vs temporal/hierarchical comparisons on real data.
 - [ ] Add OCR support for scanned/image-only PDFs.
