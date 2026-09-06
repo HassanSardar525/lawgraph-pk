@@ -6,6 +6,11 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
+class PageText(BaseModel):
+    page_number: int = Field(ge=1)
+    text: str
+
+
 class ExtractedClaim(BaseModel):
     subject: str
     predicate: str
@@ -14,6 +19,8 @@ class ExtractedClaim(BaseModel):
     subject_type: str = "entity"
     object_type: str = "entity"
     confidence: float = Field(default=1.0, ge=0.0, le=1.0)
+    evidence_start: int | None = Field(default=None, ge=0)
+    evidence_end: int | None = Field(default=None, ge=0)
 
 
 class IngestResult(BaseModel):
@@ -31,6 +38,9 @@ class Citation(BaseModel):
     source_uri: str | None = None
     chunk_id: int
     evidence: str
+    page_number: int | None = None
+    evidence_start: int | None = None
+    evidence_end: int | None = None
 
 
 class RetrievalItem(BaseModel):
