@@ -58,29 +58,38 @@ Implemented:
 
 LangSmith is an inspection/evidence layer only. It does not affect retrieval or evaluation scores.
 
+## Milestone 3 — Real ingestion
+
+**Status: in progress**
+
+Implemented:
+
+- [x] page-aware PDF text extraction with optional `pypdf`
+- [x] page-aware chunk provenance
+- [x] PDF upload API endpoint
+- [x] evidence-span storage and validation
+- [x] page numbers in retrieval citations
+- [x] deterministic tests for page/evidence provenance
+- [x] official-source strategy documented in `docs/REAL_INGESTION.md`
+
+Remaining:
+
+- [ ] structured LLM claim extractor
+- [ ] extraction confidence calibration/schema versioning
+- [ ] stronger legal entity/relation normalization
+- [ ] small manually verified Pakistani legal corpus
+- [ ] OCR path for scanned PDFs
+
 ## Current limitations
 
-- No PDF parser.
-- No real LLM extraction.
+- No real LLM extraction yet.
 - Hash embeddings are only a deterministic test substitute.
 - SQLite is not the target production graph/vector backend.
 - The answer generator is template-based rather than an LLM.
 - Conflict handling currently focuses on supersession for selected predicates; generalized contradiction detection is not implemented.
 - The evaluation set is synthetic and intentionally small.
 - LangSmith tracing is optional and requires a user-provided API key to send remote traces.
-
-## Milestone 3 — Real ingestion
-
-**Status: next**
-
-Tasks:
-
-- [ ] choose and document legal data sources/licensing
-- [ ] PDF/text extraction with page-aware provenance
-- [ ] structured LLM claim extractor
-- [ ] extraction confidence and schema validation
-- [ ] entity/relation normalization tests
-- [ ] evidence-span validation
+- OCR for scanned/image-only PDFs is not implemented.
 
 ## Milestone 4 — Research baselines
 
