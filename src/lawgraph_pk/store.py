@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS chunks (
   position INTEGER NOT NULL,
   text TEXT NOT NULL,
   embedding TEXT NOT NULL,
+  page_number INTEGER,
   UNIQUE(document_id, position)
 );
 CREATE TABLE IF NOT EXISTS entities (
@@ -46,6 +47,8 @@ CREATE TABLE IF NOT EXISTS claims (
   document_id INTEGER NOT NULL REFERENCES documents(id),
   chunk_id INTEGER NOT NULL REFERENCES chunks(id),
   confidence REAL NOT NULL,
+  evidence_start INTEGER,
+  evidence_end INTEGER,
   valid_from TEXT NOT NULL,
   valid_to TEXT,
   is_current INTEGER NOT NULL DEFAULT 1,
@@ -60,13 +63,26 @@ CREATE INDEX IF NOT EXISTS idx_claim_object ON claims(object_entity_id);
 class SQLiteGraphStore:
     def __init__(self, path: str | Path = ":memory:") -> None:
         self.path = str(path)
-        if self.path != ":memory":
+        if self.path != ":memory:":
             Path(self.path).parent.mkdir(parents=True, exist_ok=True)
         self.connection = sqlite3.connect(self.path, check_same_thread=False)
         self.connection.row_factory = sqlite3.Row
         self.lock = threading.RLock()
         with self.lock:
             self.connection.executescript(SCHEMA)
+            self._ensure_legacy_columns()
+
+    def _ensure_legacy_columns(self) -> None:
+        """Apply tiny additive migrations for databases created by earlier milestones."""
+        for table, column, definition in (
+            ("chunks", "page_number", "INTEGER"),
+            ("claims", "evidence_start", "INTEGER"),
+            ("claims", "evidence_end", "INTEGER"),
+        ):
+            columns = {row["name"] for row in self.connection.execute(f"PRAGMA table_info({table})")}
+            if column not in columns:
+                self.connection.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
+        self.connection.commit()
 
     @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
@@ -123,11 +139,12 @@ class SQLiteGraphStore:
             params.extend([as_of, as_of])
         sql = f"""
           SELECT c.*, se.display_name subject_name, oe.display_name object_name,
-                 d.title, d.source_uri
+                 d.title, d.source_uri, ch.page_number
           FROM claims c
           JOIN entities se ON se.id=c.subject_entity_id
           JOIN entities oe ON oe.id=c.object_entity_id
           JOIN documents d ON d.id=c.document_id
+          JOIN chunks ch ON ch.id=c.chunk_id
           WHERE (c.subject_entity_id IN ({marks}) OR c.object_entity_id IN ({marks})) {time_clause}
           ORDER BY c.valid_from DESC, c.id DESC
         """
