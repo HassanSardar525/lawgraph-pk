@@ -4,7 +4,7 @@ from datetime import datetime
 
 from .models import Citation, QueryResult, RetrievalItem
 from .store import SQLiteGraphStore
-from .text import cosine, hash_embedding
+from .text import cosine, hash_embedding, tokens
 
 
 class HierarchicalRetriever:
