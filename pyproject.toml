@@ -1,0 +1,28 @@
+[project]
+name = "lawgraph-pk"
+version = "0.1.0"
+description = "Temporal, conflict-aware incremental knowledge-graph RAG research prototype"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115",
+  "pydantic>=2.10",
+  "uvicorn[standard]>=0.34",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "httpx>=0.28"]
+
+[project.scripts]
+lawgraph = "lawgraph_pk.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/lawgraph_pk"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
